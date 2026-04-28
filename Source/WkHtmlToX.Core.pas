@@ -24,7 +24,7 @@ unit WkHtmlToX.Core;
 interface
 
 uses
-  System.Classes, System.SysUtils;
+  System.Classes, System.SysUtils, System.IOUtils;
 
 type
   EWkHtmlToXError = class(Exception);
@@ -96,6 +96,7 @@ type
   end;
 
 function WkHtmlToPdf :IWkHtmlToPdf;
+procedure HtmlStringToPdf(const HtmlContent: string; const OutputPdfFile: string);
 
 implementation
 
@@ -110,6 +111,42 @@ begin
   if not Assigned(WkHtmlToXInstance) then
     WkHtmlToXInstance := TWkHtmlToXFactory.Create;
   Result := WkHtmlToXInstance;
+end;
+
+
+procedure HtmlStringToPdf(const HtmlContent: string; const OutputPdfFile: string);
+
+var
+	ObjectSettings: IWkObjectSettings;
+	GlobalSettings: IWkGlobalSettings;
+	Converter: IWkConverter;
+
+  TempHtmlFile:string;
+
+begin
+
+    TempHtmlFile := TPath.GetTempFileName + '.html';
+
+    TFile.WriteAllText(TempHtmlFile, HtmlContent, TEncoding.UTF8);
+
+    GlobalSettings := WkHtmlToPdf.CreateGlobalSettings;
+    // We want the result to be storred in the file called test.pdf
+    GlobalSettings['out'] := OutputPdfFile;
+
+    ObjectSettings := WkHtmlToPdf.CreateObjectSettings;
+    // We want to convert the url 'https://wkhtmltopdf.org/'
+
+    ObjectSettings['page'] := TempHtmlFile;
+
+    Converter := WkHtmlToPdf.CreateConverter(GlobalSettings);
+    // Add the settings object to the list of pages to convert.
+    // Objects are converted in the order in which they are added
+    Converter.AddObject(ObjectSettings);
+
+    Converter.Convert;
+
+
+
 end;
 
 end.
