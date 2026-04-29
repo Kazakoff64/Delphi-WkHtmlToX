@@ -96,7 +96,7 @@ type
   end;
 
 function WkHtmlToPdf :IWkHtmlToPdf;
-procedure HtmlStringToPdf(const HtmlContent: string; const OutputPdfFile: string);
+procedure HtmlStringToPdf(const HtmlContent: string; const orientation: string; const OutputPdfFile: string);
 
 implementation
 
@@ -114,7 +114,7 @@ begin
 end;
 
 
-procedure HtmlStringToPdf(const HtmlContent: string; const OutputPdfFile: string);
+procedure HtmlStringToPdf(const HtmlContent: string; const orientation: string; const OutputPdfFile: string);
 
 var
 	ObjectSettings: IWkObjectSettings;
@@ -130,22 +130,27 @@ begin
     TFile.WriteAllText(TempHtmlFile, HtmlContent, TEncoding.UTF8);
 
     GlobalSettings := WkHtmlToPdf.CreateGlobalSettings;
-    // We want the result to be storred in the file called test.pdf
+
+    //Дополнительные полезные настройки
+    // orientation - Landscape / Portrait
+    // page-size - A4, A3, Letter
+    // margin-top / margin-bottom =  20mm
+    // dpi - 300
+    //image-dpi - 300
+
+    GlobalSettings['orientation'] := orientation;
+    GlobalSettings['page-size'] := 'A4';
     GlobalSettings['out'] := OutputPdfFile;
 
     ObjectSettings := WkHtmlToPdf.CreateObjectSettings;
-    // We want to convert the url 'https://wkhtmltopdf.org/'
 
     ObjectSettings['page'] := TempHtmlFile;
 
     Converter := WkHtmlToPdf.CreateConverter(GlobalSettings);
-    // Add the settings object to the list of pages to convert.
-    // Objects are converted in the order in which they are added
+
     Converter.AddObject(ObjectSettings);
 
     Converter.Convert;
-
-
 
 end;
 
